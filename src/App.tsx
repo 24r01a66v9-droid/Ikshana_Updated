@@ -11,6 +11,9 @@ import WhatWeDo from "./components/WhatWeDo";
 import Impact from "./components/Impact";
 import PastEvents from "./components/PastEvents";
 import Gallery from "./components/Gallery";
+import Videos from "./components/Videos";
+import Sponsors from "./components/Sponsors";
+import Careers from "./components/Careers";
 import SeekHelp from "./components/SeekHelp";
 import Reviews from "./components/Reviews";
 import SupportUs from "./components/SupportUs";
@@ -30,6 +33,9 @@ export default function App() {
           <Impact />
           <PastEvents />
           <Gallery />
+          <Videos />
+          <Sponsors />
+          <Careers />
           <SeekHelp />
           <Reviews />
           <SupportUs />

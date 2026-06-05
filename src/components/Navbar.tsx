@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { Users, Calendar, Info, Mail, Heart, LifeBuoy, Star, ImageIcon, LogIn, LogOut, User, Video } from "lucide-react";
+import { Calendar, Info, LifeBuoy, Star, ImageIcon, LogIn, LogOut, User, Video, Handshake, Briefcase } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import AuthModals from "./AuthModals";
@@ -15,6 +15,9 @@ export default function Navbar() {
     { name: "About", icon: Info, href: "#about" },
     { name: "Events", icon: Calendar, href: "#events" },
     { name: "Gallery", icon: ImageIcon, href: "#gallery" },
+    { name: "Videos", icon: Video, href: "#videos" },
+    { name: "Sponsors", icon: Handshake, href: "#sponsors" },
+    { name: "Careers", icon: Briefcase, href: "#careers" },
     { name: "Seek Help", icon: LifeBuoy, href: "#seek-help" },
     { name: "Reviews", icon: Star, href: "#reviews" },
   ];

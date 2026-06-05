@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Palette, PenTool, Image as ImageIcon, Heart, ShieldCheck, X, Calendar, MapPin, Award, ArrowRight } from "lucide-react";
+import { Palette, PenTool, Image as ImageIcon, Heart, ShieldCheck, X, Award, ArrowRight, Upload, Trash2, Camera } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 interface EventPhoto {
   id: string;
   url: string;
-  caption: string;
+  title?: string;
+  caption?: string;
   is_featured: boolean;
 }
 
@@ -26,9 +28,15 @@ interface Event {
 }
 
 export default function PastEvents() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === "admin";
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [eventPhotos, setEventPhotos] = useState<EventPhoto[]>([]);
   const [loadingPhotos, setLoadingPhotos] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [uploadCaption, setUploadCaption] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const events: Event[] = [
     {
@@ -480,6 +488,47 @@ export default function PastEvents() {
     }
   };
 
+  const handleEventPhotoUpload = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!uploadFile || !selectedEvent || uploading) return;
+
+    setUploading(true);
+    const formData = new FormData();
+    formData.append("file", uploadFile);
+    formData.append("title", uploadCaption || selectedEvent.title);
+    formData.append("category", "event");
+    formData.append("sub_category", selectedEvent.title);
+    formData.append("date", selectedEvent.date);
+
+    try {
+      const response = await fetch("/api/photos", { method: "POST", body: formData });
+      if (response.ok) {
+        await fetchEventPhotos(selectedEvent.title);
+        setUploadFile(null);
+        setUploadCaption("");
+      } else {
+        const error = await response.json();
+        alert(error.error || "Upload failed");
+      }
+    } catch (err) {
+      console.error("Failed to upload event photo", err);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const removeEventPhoto = async (id: string) => {
+    if (!confirm("Delete this photo?")) return;
+    try {
+      const response = await fetch(`/api/photos/${id}`, { method: "DELETE" });
+      if (response.ok && selectedEvent) {
+        setEventPhotos(eventPhotos.filter((p) => p.id !== id));
+      }
+    } catch (err) {
+      console.error("Failed to delete event photo", err);
+    }
+  };
+
   return (
     <section id="events" className="py-32 px-6 bg-brand-cream relative overflow-hidden">
       {/* Background Accents */}
@@ -650,8 +699,57 @@ export default function PastEvents() {
                   <div className="space-y-8">
                     <div className="flex items-center justify-between">
                       <h4 className="text-[10px] font-bold uppercase tracking-[0.3em] text-brand-maroon/40">Event Gallery</h4>
-                      {loadingPhotos && <div className="w-4 h-4 border-2 border-brand-maroon/20 border-t-brand-maroon rounded-full animate-spin" />}
+                      <div className="flex items-center gap-3">
+                        {loadingPhotos && <div className="w-4 h-4 border-2 border-brand-maroon/20 border-t-brand-maroon rounded-full animate-spin" />}
+                        {isAdmin && (
+                          <span className="text-[9px] font-bold uppercase tracking-widest text-brand-maroon/40 flex items-center gap-1">
+                            <Camera size={12} /> Admin Upload
+                          </span>
+                        )}
+                      </div>
                     </div>
+
+                    {isAdmin && (
+                      <form onSubmit={handleEventPhotoUpload} className="p-6 bg-white rounded-[2rem] border border-stone-100 space-y-4">
+                        <div
+                          className="relative border-2 border-dashed border-stone-200 rounded-2xl p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:border-brand-maroon/30 transition-colors"
+                          onClick={() => fileInputRef.current?.click()}
+                        >
+                          {uploadFile ? (
+                            <div className="flex flex-col items-center">
+                              <img src={URL.createObjectURL(uploadFile)} alt="Preview" className="w-24 h-24 rounded-xl object-cover mb-3" />
+                              <p className="text-xs text-brand-maroon/60">{uploadFile.name}</p>
+                            </div>
+                          ) : (
+                            <>
+                              <Upload size={24} className="text-stone-300 mb-2" />
+                              <p className="text-[10px] uppercase tracking-widest text-stone-400">Click to upload event photo</p>
+                            </>
+                          )}
+                          <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => e.target.files?.[0] && setUploadFile(e.target.files[0])}
+                          />
+                        </div>
+                        <input
+                          type="text"
+                          placeholder="Caption (optional)"
+                          value={uploadCaption}
+                          onChange={(e) => setUploadCaption(e.target.value)}
+                          className="w-full border-b border-stone-200 py-2 text-sm focus:outline-none focus:border-brand-maroon font-serif"
+                        />
+                        <button
+                          type="submit"
+                          disabled={!uploadFile || uploading}
+                          className="w-full bg-brand-maroon text-white py-3 rounded-xl font-bold tracking-widest uppercase text-[10px] hover:bg-stone-900 transition-all disabled:opacity-50"
+                        >
+                          {uploading ? "Uploading..." : "Upload to Event"}
+                        </button>
+                      </form>
+                    )}
 
                     {eventPhotos.length > 0 ? (
                       <div className="grid grid-cols-2 gap-4">
@@ -664,12 +762,20 @@ export default function PastEvents() {
                           >
                             <img 
                               src={photo.url} 
-                              alt={photo.caption}
+                              alt={photo.title || photo.caption}
                               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                             />
                             <div className="absolute inset-0 bg-brand-maroon/80 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6">
-                              <p className="text-white text-[10px] font-medium leading-tight">{photo.caption}</p>
+                              <p className="text-white text-[10px] font-medium leading-tight">{photo.title || photo.caption}</p>
                             </div>
+                            {isAdmin && (
+                              <button
+                                onClick={() => removeEventPhoto(photo.id)}
+                                className="absolute top-3 right-3 w-8 h-8 bg-white text-brand-maroon rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-stone-900 hover:text-white transition-all shadow-lg"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            )}
                           </motion.div>
                         ))}
                       </div>
@@ -677,6 +783,9 @@ export default function PastEvents() {
                       <div className="aspect-square rounded-[3rem] border-2 border-dashed border-stone-200 flex flex-col items-center justify-center text-center p-12 bg-white/50">
                         <ImageIcon size={48} className="text-stone-200 mb-6" />
                         <p className="text-stone-400 font-serif italic">No photos available for this event archive yet.</p>
+                        {isAdmin && (
+                          <p className="text-brand-maroon/40 text-xs mt-3 uppercase tracking-widest font-bold">Use the form above to upload</p>
+                        )}
                       </div>
                     )}
                   </div>

@@ -305,7 +305,10 @@ async function startServer() {
     }
   });
 
-  app.post("/api/videos", async (req, res) => {
+  app.post("/api/videos", authenticateToken, async (req: any, res) => {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
     const { title, description, url, thumbnail, category, date } = req.body;
     if (!title || !url) return res.status(400).json({ error: "Title and URL are required" });
 
@@ -327,7 +330,10 @@ async function startServer() {
     }
   });
 
-  app.delete("/api/videos/:id", async (req, res) => {
+  app.delete("/api/videos/:id", authenticateToken, async (req: any, res) => {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
     const { id } = req.params;
     try {
       const { error } = await supabase.from("videos").delete().eq("id", id);
@@ -336,6 +342,113 @@ async function startServer() {
     } catch (error) {
       console.error("Supabase delete video error:", error);
       res.status(500).json({ error: "Failed to delete video" });
+    }
+  });
+
+  // Sponsors API
+  app.get("/api/sponsors", async (req, res) => {
+    try {
+      const { data, error } = await supabase.from("sponsors").select("*").order("created_at", { ascending: false });
+      if (error) throw error;
+      return res.json(data || []);
+    } catch (error) {
+      console.error("Supabase fetch sponsors error:", error);
+      res.status(500).json({ error: "Failed to fetch sponsors" });
+    }
+  });
+
+  app.post("/api/sponsors", authenticateToken, async (req: any, res) => {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    const { name, description, logo_url, website_url, type, contact_email, contact_phone } = req.body;
+    if (!name) return res.status(400).json({ error: "Name is required" });
+
+    try {
+      const { data, error } = await supabase.from("sponsors").insert([{
+        name,
+        description: description || null,
+        logo_url: logo_url || null,
+        website_url: website_url || null,
+        type: type || "sponsor",
+        contact_email: contact_email || null,
+        contact_phone: contact_phone || null,
+      }]).select();
+
+      if (error) throw error;
+      return res.json({ success: true, id: data[0].id });
+    } catch (error) {
+      console.error("Supabase add sponsor error:", error);
+      res.status(500).json({ error: "Failed to add sponsor" });
+    }
+  });
+
+  app.delete("/api/sponsors/:id", authenticateToken, async (req: any, res) => {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    const { id } = req.params;
+    try {
+      const { error } = await supabase.from("sponsors").delete().eq("id", id);
+      if (error) throw error;
+      return res.json({ success: true });
+    } catch (error) {
+      console.error("Supabase delete sponsor error:", error);
+      res.status(500).json({ error: "Failed to delete sponsor" });
+    }
+  });
+
+  // Job Openings API
+  app.get("/api/jobs", async (req, res) => {
+    try {
+      const { data, error } = await supabase.from("job_openings").select("*").eq("is_active", true).order("created_at", { ascending: false });
+      if (error) throw error;
+      return res.json(data || []);
+    } catch (error) {
+      console.error("Supabase fetch jobs error:", error);
+      res.status(500).json({ error: "Failed to fetch job openings" });
+    }
+  });
+
+  app.post("/api/jobs", authenticateToken, async (req: any, res) => {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    const { title, department, description, requirements, location, job_type, contact_email } = req.body;
+    if (!title || !description) return res.status(400).json({ error: "Title and description are required" });
+
+    try {
+      const { data, error } = await supabase.from("job_openings").insert([{
+        title,
+        department: department || null,
+        description,
+        requirements: requirements || null,
+        location: location || null,
+        job_type: job_type || "volunteer",
+        contact_email: contact_email || null,
+        is_active: true,
+      }]).select();
+
+      if (error) throw error;
+      return res.json({ success: true, id: data[0].id });
+    } catch (error) {
+      console.error("Supabase add job error:", error);
+      res.status(500).json({ error: "Failed to add job opening" });
+    }
+  });
+
+  app.delete("/api/jobs/:id", authenticateToken, async (req: any, res) => {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    const { id } = req.params;
+    try {
+      const { error } = await supabase.from("job_openings").delete().eq("id", id);
+      if (error) throw error;
+      return res.json({ success: true });
+    } catch (error) {
+      console.error("Supabase delete job error:", error);
+      res.status(500).json({ error: "Failed to delete job opening" });
     }
   });
 

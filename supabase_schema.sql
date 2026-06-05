@@ -90,6 +90,35 @@ CREATE TABLE IF NOT EXISTS rsvps (
 );
 
 
+-- 7. Sponsors Table
+CREATE TABLE IF NOT EXISTS sponsors (
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    description TEXT,
+    logo_url TEXT,
+    website_url TEXT,
+    type TEXT DEFAULT 'sponsor', -- 'sponsor', 'donation', 'advertisement'
+    contact_email TEXT,
+    contact_phone TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+);
+
+
+-- 8. Job Openings Table
+CREATE TABLE IF NOT EXISTS job_openings (
+    id SERIAL PRIMARY KEY,
+    title TEXT NOT NULL,
+    department TEXT,
+    description TEXT NOT NULL,
+    requirements TEXT,
+    location TEXT,
+    job_type TEXT DEFAULT 'volunteer', -- 'volunteer', 'part-time', 'full-time', 'internship'
+    contact_email TEXT,
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+);
+
+
 -- Optional: Setup Storage Buckets
 -- Note: Make sure to enable public access on 'photos' bucket in Supabase dashboard
 -- or write appropriate RLS policies for uploads/deletes.
@@ -101,6 +130,8 @@ ALTER TABLE videos DISABLE ROW LEVEL SECURITY;
 ALTER TABLE reviews DISABLE ROW LEVEL SECURITY;
 ALTER TABLE medical_requests DISABLE ROW LEVEL SECURITY;
 ALTER TABLE rsvps DISABLE ROW LEVEL SECURITY;
+ALTER TABLE sponsors DISABLE ROW LEVEL SECURITY;
+ALTER TABLE job_openings DISABLE ROW LEVEL SECURITY;
 
 -- Enable permissions for the 'photos' storage bucket in Supabase Storage
 -- (Make sure you have created the 'photos' bucket in the Storage tab of your dashboard)

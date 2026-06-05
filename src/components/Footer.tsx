@@ -1,4 +1,4 @@
-import { Instagram, Twitter, Linkedin, Github } from "lucide-react";
+import { Instagram, Linkedin } from "lucide-react";
 import Logo from "./Logo";
 
 export default function Footer() {
@@ -27,8 +27,6 @@ export default function Footer() {
               {[
                 { icon: Instagram, href: "https://www.instagram.com/ikshana_official/" },
                 { icon: Linkedin, href: "https://www.linkedin.com/company/ikshana-foundation/" },
-                { icon: Twitter, href: "#" },
-                { icon: Github, href: "#" }
               ].map((social, i) => (
                 <a 
                   key={i}
@@ -51,6 +49,9 @@ export default function Footer() {
               <li><a href="#gallery" className="hover:text-white transition-colors flex items-center gap-3 group"><div className="w-0 group-hover:w-6 h-[1px] bg-white transition-all"></div> Gallery</a></li>
               <li><a href="#seek-help" className="hover:text-white transition-colors flex items-center gap-3 group"><div className="w-0 group-hover:w-6 h-[1px] bg-white transition-all"></div> Seek Help</a></li>
               <li><a href="#reviews" className="hover:text-white transition-colors flex items-center gap-3 group"><div className="w-0 group-hover:w-6 h-[1px] bg-white transition-all"></div> Reviews</a></li>
+              <li><a href="#videos" className="hover:text-white transition-colors flex items-center gap-3 group"><div className="w-0 group-hover:w-6 h-[1px] bg-white transition-all"></div> Videos</a></li>
+              <li><a href="#sponsors" className="hover:text-white transition-colors flex items-center gap-3 group"><div className="w-0 group-hover:w-6 h-[1px] bg-white transition-all"></div> Sponsors</a></li>
+              <li><a href="#careers" className="hover:text-white transition-colors flex items-center gap-3 group"><div className="w-0 group-hover:w-6 h-[1px] bg-white transition-all"></div> Careers</a></li>
             </ul>
           </div>
 
@@ -63,7 +64,7 @@ export default function Footer() {
               </li>
               <li className="flex flex-col gap-2">
                 <span className="text-[10px] uppercase tracking-widest font-bold text-white/40">Email</span>
-                <span className="text-xl font-serif italic">contact@ikshana.foundation</span>
+                <a href="mailto:ikshana.4foundation@gmail.com" className="text-xl font-serif italic hover:text-white transition-colors">ikshana.4foundation@gmail.com</a>
               </li>
               <li className="flex flex-col gap-2">
                 <span className="text-[10px] uppercase tracking-widest font-bold text-white/40">Social</span>
