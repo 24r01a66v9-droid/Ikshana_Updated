@@ -104,6 +104,11 @@ ALTER TABLE rsvps DISABLE ROW LEVEL SECURITY;
 
 -- Enable permissions for the 'photos' storage bucket in Supabase Storage
 -- (Make sure you have created the 'photos' bucket in the Storage tab of your dashboard)
+DROP POLICY IF EXISTS "Allow public select" ON storage.objects;
 CREATE POLICY "Allow public select" ON storage.objects FOR SELECT TO public USING (bucket_id = 'photos');
+
+DROP POLICY IF EXISTS "Allow public uploads" ON storage.objects;
 CREATE POLICY "Allow public uploads" ON storage.objects FOR INSERT TO public WITH CHECK (bucket_id = 'photos');
+
+DROP POLICY IF EXISTS "Allow public delete" ON storage.objects;
 CREATE POLICY "Allow public delete" ON storage.objects FOR DELETE TO public USING (bucket_id = 'photos');
