@@ -1,0 +1,17 @@
+# Render Blueprint (optional). If repo root is parent of ikshana, set Root Directory to: ikshana
+
+services:
+  - type: web
+    name: ikshana
+    runtime: node
+    region: oregon
+
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+
+    healthCheckPath: /health
+
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # In Dashboard, add: JWT_SECRET (required), SUPABASE_URL, SUPABASE_ANON_KEY (for persistent DB)
